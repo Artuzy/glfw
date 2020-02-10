@@ -1,105 +1,47 @@
-workspace "Engine"
+project "GLFW"
+	kind "StaticLib"
+	language "C"
 
-	architecture "x64"
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	configurations {
-		"Debug",
-		"Release",   --faster version of Debug
-		"Dist" --complete distribution build with no logging
+	files
+	{
+		"include/GLFW/glfw3.h",
+		"include/GLFW/glfw3native.h",
+		"src/glfw_config.h",
+		"src/context.c",
+		"src/init.c",
+		"src/input.c",
+		"src/monitor.c",
+		"src/vulkan.c",
+		"src/window.c"
 	}
 
-	outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}" --whether its debug or realease, system windows mac or etc? , x64 or x86
+	filter "system:windows"
+		buildoptions { "-std=c11", "-lgdi32" }
+		systemversion "latest"
+		staticruntime "On"
 
-	project "Engine"
-		location "Engine"
-		kind "SharedLib"
-		language "C++"
-
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin_int/" .. outputdir .. "/%{prj.name}")
-
-		pchheader "EG_pcompiled_header.h"
-		pchsource "Engine/src/EG_pcompiled_header.cpp"
-
-		files{
-			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp" 
+		files
+		{
+			"src/win32_init.c",
+			"src/win32_joystick.c",
+			"src/win32_monitor.c",
+			"src/win32_time.c",
+			"src/win32_thread.c",
+			"src/win32_window.c",
+			"src/wgl_context.c",
+			"src/egl_context.c",
+			"src/osmesa_context.c"
 		}
 
-		includedirs{
-			"%{prj.name}/src",
-			"%{prj.name}/tpd/spdlog/include"
-
+		defines 
+		{ 
+			"_GLFW_WIN32",
+			"_CRT_SECURE_NO_WARNINGS"
 		}
 
-		filter "system:windows" --certain project configurations if system is windows, zem filtra viss attiecas uz windows
-			cppdialect "C++17"
-			staticruntime "On"--linking the run-time libraries
-			systemversion "latest"
-
-			 defines{
-			 	"EG_PLATFORM_WINDOWS",
-				 "EG_BUILD_DLL"
-			 }
-
-			 postbuildcommands{ -- lai automatiski atjaunotu dll pec katras izmainas
-			  ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Testbox")
-			 }
-
-			 filter "configurations:Debug"
-				defines "EG_DEBUG"
-				symbols "On"
-
-			 filter "configurations:Release"
-				defines "EG_RELEASE"
-				optimize "On"
-
-			 filter "configurations:Dist"
-				defines "EG_DIST"
-				optimize "On"
-
-
-	project "Testbox"
-	
-	location "Testbox"
-		kind "ConsoleApp"
-		language "C++"
-
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin_int/" .. outputdir .. "/%{prj.name}")
-
-		files{
-			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp" 
-		}
-
-		includedirs{
-			"Engine/tpd/spdlog/include",
-			"Engine/src"
-		}
-
-		links{  --Testbox связываем с Движком
-			"Engine"
-		}
-
-
-		filter "system:windows" --certain project configurations if system is windows, zem filtra viss attiecas uz windows
-			cppdialect "C++17"
-			staticruntime "On"--linking the run-time libraries
-			systemversion "latest"
-
-			 defines{
-			 	"EG_PLATFORM_WINDOWS"				
-			 }
-
-			 filter "configurations:Debug"
-				defines "EG_DEBUG"
-				symbols "On"
-
-			 filter "configurations:Release"
-				defines "EG_RELEASE"
-				optimize "On"
-
-			 filter "configurations:Dist"
-				defines "EG_DIST"
-				optimize "On"
+	filter { "system:windows", "configurations:Release" }
+	    buildoptions "/MT"
+		
