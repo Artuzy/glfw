@@ -3,7 +3,7 @@ project "GLFW"
 	language "C"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin_int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -18,8 +18,7 @@ project "GLFW"
 		"src/window.c"
 	}
 
-	filter "system:windows"
-		buildoptions { "-std=c11", "-lgdi32" }
+	filter "system:windows"		
 		systemversion "latest"
 		staticruntime "On"
 
